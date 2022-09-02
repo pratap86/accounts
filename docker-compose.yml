@@ -1,0 +1,30 @@
+version: "3.8"
+
+services:
+
+  accounts:
+    image: narayanpratap86/accounts:latest
+    mem_limit: 700m
+    ports:
+      - "8080:8080"
+    networks:
+      - narayanpratapbank-network
+    
+  loans:
+    image: narayanpratap86/loans:latest
+    mem_limit: 700m
+    ports:
+      - "8090:8090"
+    networks:
+      - narayanpratapbank-network
+    
+  cards:
+    image: narayanpratap86/cards:latest
+    mem_limit: 700m
+    ports:
+      - "9000:9000"
+    networks:
+      - narayanpratapbank-network
+    
+networks:
+  narayanpratapbank-network:
