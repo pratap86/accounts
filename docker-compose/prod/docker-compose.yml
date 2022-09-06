@@ -1,0 +1,71 @@
+version: "3.8"
+
+services:
+
+  configurator:
+    image: narayanpratap86/configurator:latest
+    mem_limit: 700m
+    ports:
+      - "8071:8071"
+    networks:
+      - narayanpratapbank-network
+
+  accounts:
+    image: narayanpratap86/accounts:v1.0.0
+    mem_limit: 700m
+    ports:
+      - "8080:8080"
+    networks:
+      - narayanpratapbank-network
+    depends_on:
+      - configurator
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+    environment:
+      SPRING_PROFILE_ACTIVE: prod
+      SPRING_CONFIG_IMPORT: configserver:http://configurator:8071/
+    
+  loans:
+    image: narayanpratap86/loans:v1.0.0
+    mem_limit: 700m
+    ports:
+      - "8090:8090"
+    networks:
+      - narayanpratapbank-network
+    depends_on:
+      - configurator
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+    environment:
+      SPRING_PROFILE_ACTIVE: prod
+      SPRING_CONFIG_IMPORT: configserver:http://configurator:8071/
+    
+  cards:
+    image: narayanpratap86/cards:v1.0.0
+    mem_limit: 700m
+    ports:
+      - "9000:9000"
+    networks:
+      - narayanpratapbank-network
+    depends_on:
+      - configurator
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+    environment:
+      SPRING_PROFILE_ACTIVE: prod
+      SPRING_CONFIG_IMPORT: configserver:http://configurator:8071/
+    
+networks:
+  narayanpratapbank-network:
