@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.pratap.accounts.config.AccountsServiceConfig;
 import com.pratap.accounts.model.Accounts;
 import com.pratap.accounts.model.Cards;
-import com.pratap.accounts.model.Customer;
 import com.pratap.accounts.model.CustomerDetails;
 import com.pratap.accounts.model.Loans;
 import com.pratap.accounts.model.Properties;
@@ -20,6 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -41,11 +41,11 @@ public class AccountsController {
     private LoansFeignClient loansFeignClient;
 
     @GetMapping("/myAccount")
-    public ResponseEntity<Accounts> getAccountDetails(@RequestBody Customer customer) {
+    public ResponseEntity<Accounts> getAccountDetails(@RequestParam int customerId) {
 
-        Accounts accounts = accountsRepository.findByCustomerId(customer.getCustomerId());
+        Accounts accounts = accountsRepository.findByCustomerId(customerId);
         if (accounts != null)
-            return new ResponseEntity<Accounts>(accounts, HttpStatus.FOUND);
+            return new ResponseEntity<Accounts>(accounts, HttpStatus.OK);
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
@@ -59,11 +59,11 @@ public class AccountsController {
     }
 
     @GetMapping("/myCustomerDetails")
-    public ResponseEntity<CustomerDetails> getCustomerDetails(@RequestBody Customer customer){
+    public ResponseEntity<CustomerDetails> getCustomerDetails(@RequestParam int customerId){
 
-        Accounts accounts = accountsRepository.findByCustomerId(customer.getCustomerId());
-        List<Loans> loansDetails = loansFeignClient.getLoansDetails(customer).getBody();
-        List<Cards> cardDetails = cardsFeignClient.getCardDetails(customer).getBody();
+        Accounts accounts = accountsRepository.findByCustomerId(customerId);
+        List<Loans> loansDetails = loansFeignClient.getLoansDetails(customerId).getBody();
+        List<Cards> cardDetails = cardsFeignClient.getCardDetails(customerId).getBody();
 
         CustomerDetails customerDetails = new CustomerDetails();
         if (accounts != null)
@@ -72,6 +72,6 @@ public class AccountsController {
             customerDetails.setLoans(loansDetails);
         if (cardDetails != null && !cardDetails.isEmpty())
             customerDetails.setCards(cardDetails);
-        return new ResponseEntity<CustomerDetails>(customerDetails, HttpStatus.FOUND);
+        return new ResponseEntity<CustomerDetails>(customerDetails, HttpStatus.OK);
     }
 }

@@ -9,9 +9,19 @@ services:
       - "8071:8071"
     networks:
       - narayanpratapbank-network
+  
+  eurekaserver:
+    image: narayanpratap86/eurekaserver:latest
+    mem_limit: 700m
+    ports:
+      - "8070:8070"
+    networks:
+      - narayanpratapbank-network
+    depends_on:
+      - configurator
 
   accounts:
-    image: narayanpratap86/accounts:v1.0.0
+    image: narayanpratap86/accounts:v1.0.01
     mem_limit: 700m
     ports:
       - "8080:8080"
@@ -30,7 +40,7 @@ services:
       SPRING_CONFIG_IMPORT: configserver:http://configurator:8071/
     
   loans:
-    image: narayanpratap86/loans:v1.0.0
+    image: narayanpratap86/loans:v1.0.01
     mem_limit: 700m
     ports:
       - "8090:8090"
@@ -49,7 +59,7 @@ services:
       SPRING_CONFIG_IMPORT: configserver:http://configurator:8071/
     
   cards:
-    image: narayanpratap86/cards:v1.0.0
+    image: narayanpratap86/cards:v1.0.01
     mem_limit: 700m
     ports:
       - "9000:9000"
