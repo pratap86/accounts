@@ -1,0 +1,23 @@
+[
+  {
+    "cardId": 12345,
+    "customerId": 787810,
+    "cardNumber": "90XYZ00090",
+    "cardType": "credit",
+    "totalLimit": 3500000,
+    "amountUsed": 150000,
+    "availableAmount": 200000,
+    "createDt": "2022-08-26"
+  },
+  {
+    "cardId": 12346,
+    "customerId": 787820,
+    "cardNumber": "90XYZ00080",
+    "cardType": "credit",
+    "totalLimit": 3400000,
+    "amountUsed": 160000,
+    "availableAmount": 200000,
+    "createDt": "2022-08-20"
+  }
+]
+

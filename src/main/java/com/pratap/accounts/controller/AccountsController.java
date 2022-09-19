@@ -12,6 +12,8 @@ import com.pratap.accounts.model.Properties;
 import com.pratap.accounts.repository.AccountsRepository;
 import com.pratap.accounts.restclients.CardsFeignClient;
 import com.pratap.accounts.restclients.LoansFeignClient;
+import com.pratap.accounts.util.AccountsUtil;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -22,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -59,6 +62,7 @@ public class AccountsController {
     }
 
     @GetMapping("/myCustomerDetails")
+    @CircuitBreaker(name = "detailsForCustomerSupportApp", fallbackMethod = "myCustomerDetailsFallBack")
     public ResponseEntity<CustomerDetails> getCustomerDetails(@RequestParam int customerId){
 
         Accounts accounts = accountsRepository.findByCustomerId(customerId);
@@ -72,6 +76,19 @@ public class AccountsController {
             customerDetails.setLoans(loansDetails);
         if (cardDetails != null && !cardDetails.isEmpty())
             customerDetails.setCards(cardDetails);
+        return new ResponseEntity<CustomerDetails>(customerDetails, HttpStatus.OK);
+    }
+
+    private ResponseEntity<CustomerDetails> myCustomerDetailsFallBack(int customerId, Throwable throwable){
+
+        Accounts accounts = accountsRepository.findByCustomerId(customerId);
+        List<Loans> loansDetails = loansFeignClient.getLoansDetails(customerId).getBody();
+        List<Cards> cards = new ArrayList<>();
+        cards = AccountsUtil.jsonToJava("cards.json", Cards.class);
+        CustomerDetails customerDetails = new CustomerDetails();
+        customerDetails.setAccounts(accounts);
+        customerDetails.setLoans(loansDetails);
+        customerDetails.setCards(cards);
         return new ResponseEntity<CustomerDetails>(customerDetails, HttpStatus.OK);
     }
 }
