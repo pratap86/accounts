@@ -19,7 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -63,11 +63,12 @@ public class AccountsController {
 
     @GetMapping("/myCustomerDetails")
     @CircuitBreaker(name = "detailsForCustomerSupportApp", fallbackMethod = "myCustomerDetailsFallBack")
-    public ResponseEntity<CustomerDetails> getCustomerDetails(@RequestParam int customerId){
+    public ResponseEntity<CustomerDetails> getCustomerDetails(@RequestHeader("narayanbank-correlation-id") String correlationId,
+            @RequestParam int customerId){
 
         Accounts accounts = accountsRepository.findByCustomerId(customerId);
-        List<Loans> loansDetails = loansFeignClient.getLoansDetails(customerId).getBody();
-        List<Cards> cardDetails = cardsFeignClient.getCardDetails(customerId).getBody();
+        List<Loans> loansDetails = loansFeignClient.getLoansDetails(correlationId, customerId).getBody();
+        List<Cards> cardDetails = cardsFeignClient.getCardDetails(correlationId, customerId).getBody();
 
         CustomerDetails customerDetails = new CustomerDetails();
         if (accounts != null)
@@ -79,10 +80,11 @@ public class AccountsController {
         return new ResponseEntity<CustomerDetails>(customerDetails, HttpStatus.OK);
     }
 
-    private ResponseEntity<CustomerDetails> myCustomerDetailsFallBack(int customerId, Throwable throwable){
+    private ResponseEntity<CustomerDetails> myCustomerDetailsFallBack(@RequestHeader("narayanbank-correlation-id") String correlationId,
+                                                                      int customerId, Throwable throwable){
 
         Accounts accounts = accountsRepository.findByCustomerId(customerId);
-        List<Loans> loansDetails = loansFeignClient.getLoansDetails(customerId).getBody();
+        List<Loans> loansDetails = loansFeignClient.getLoansDetails(correlationId, customerId).getBody();
         List<Cards> cards = new ArrayList<>();
         cards = AccountsUtil.jsonToJava("cards.json", Cards.class);
         CustomerDetails customerDetails = new CustomerDetails();
