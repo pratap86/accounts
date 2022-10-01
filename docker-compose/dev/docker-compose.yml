@@ -93,14 +93,14 @@ services:
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaserver:8070/eureka/
    
   gatewayserver:
-    image: narayanpratap86/gatewayserver:latest
+    image: narayanpratap86/gatewayserver:v1.0.0
     mem_limit: 700m
     ports:
       - "8072:8072"
     networks:
       - narayanbank
     depends_on:
-      - configserver
+      - configurator
       - eurekaserver
       - cards
       - loans
@@ -112,8 +112,8 @@ services:
         max_attempts: 3
         window: 180s
     environment:
-      SPRING_PROFILES_ACTIVE: default
-      SPRING_CONFIG_IMPORT: configserver:http://configserver:8071/
+      SPRING_PROFILES_ACTIVE: dev
+      SPRING_CONFIG_IMPORT: configserver:http://configurator:8071/
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaserver:8070/eureka/
       
 networks:
