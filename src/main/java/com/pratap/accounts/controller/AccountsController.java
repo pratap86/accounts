@@ -66,6 +66,7 @@ public class AccountsController {
     public ResponseEntity<CustomerDetails> getCustomerDetails(@RequestHeader("narayanbank-correlation-id") String correlationId,
             @RequestParam int customerId){
 
+        log.info("Executing getCustomerDetails() with customerId = {}", customerId);
         Accounts accounts = accountsRepository.findByCustomerId(customerId);
         List<Loans> loansDetails = loansFeignClient.getLoansDetails(correlationId, customerId).getBody();
         List<Cards> cardDetails = cardsFeignClient.getCardDetails(correlationId, customerId).getBody();
@@ -77,6 +78,7 @@ public class AccountsController {
             customerDetails.setLoans(loansDetails);
         if (cardDetails != null && !cardDetails.isEmpty())
             customerDetails.setCards(cardDetails);
+        log.info("Completed getCustomerDetails()");
         return new ResponseEntity<CustomerDetails>(customerDetails, HttpStatus.OK);
     }
 
