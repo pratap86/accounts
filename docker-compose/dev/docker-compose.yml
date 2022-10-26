@@ -11,7 +11,7 @@ services:
      - narayanbank
   
   configurator:
-    image: narayanpratap86/configserver:v1.0.0
+    image: narayanpratap86/configurator:v1.0.0
     mem_limit: 700m
     ports:
       - "8071:8071"
@@ -20,7 +20,7 @@ services:
     depends_on:
       - zipkin
     environment:
-      SPRING_PROFILES_ACTIVE: default
+      SPRING_PROFILES_ACTIVE: dev
       SPRING_ZIPKIN_BASEURL: http://zipkin:9411/
    
   eurekaserver:
@@ -39,7 +39,7 @@ services:
         max_attempts: 3
         window: 120s
     environment:
-      SPRING_PROFILES_ACTIVE: default
+      SPRING_PROFILES_ACTIVE: dev
       SPRING_CONFIG_IMPORT: configserver:http://configurator:8071/
       SPRING_ZIPKIN_BASEURL: http://zipkin:9411/
   accounts:
@@ -124,9 +124,9 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
-        delay: 45s
-        max_attempts: 3
-        window: 180s
+        delay: 70s
+        max_attempts: 5
+        window: 280s
     environment:
       SPRING_PROFILES_ACTIVE: dev
       SPRING_CONFIG_IMPORT: configserver:http://configurator:8071/
