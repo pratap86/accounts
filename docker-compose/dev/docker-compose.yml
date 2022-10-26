@@ -1,0 +1,137 @@
+version: "3.8"
+
+services:
+
+  zipkin:
+    image: openzipkin/zipkin
+    mem_limit: 700m
+    ports:
+      - "9411:9411"
+    networks:
+     - narayanbank
+  
+  configurator:
+    image: narayanpratap86/configurator:v1.0.0
+    mem_limit: 700m
+    ports:
+      - "8071:8071"
+    networks:
+     - narayanbank
+    depends_on:
+      - zipkin
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      SPRING_ZIPKIN_BASEURL: http://zipkin:9411/
+   
+  eurekaserver:
+    image: narayanpratap86/eurekaserver:v1.0.0
+    mem_limit: 700m
+    ports:
+      - "8070:8070"
+    networks:
+      - narayanbank
+    depends_on:
+      - configurator
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 15s
+        max_attempts: 3
+        window: 120s
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      SPRING_CONFIG_IMPORT: configserver:http://configurator:8071/
+      SPRING_ZIPKIN_BASEURL: http://zipkin:9411/
+  accounts:
+    image: narayanpratap86/accounts:v1.0.03
+    mem_limit: 700m
+    ports:
+      - "8080:8080"
+    networks:
+      - narayanbank
+    depends_on:
+      - configurator
+      - eurekaserver
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 30s
+        max_attempts: 3
+        window: 120s
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      SPRING_CONFIG_IMPORT: configserver:http://configurator:8071/
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaserver:8070/eureka/
+      SPRING_ZIPKIN_BASEURL: http://zipkin:9411/
+    
+  loans:
+    image: narayanpratap86/loans:v1.0.03
+    mem_limit: 700m
+    ports:
+      - "8090:8090"
+    networks:
+      - narayanbank
+    depends_on:
+      - configurator
+      - eurekaserver
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 30s
+        max_attempts: 3
+        window: 120s
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      SPRING_CONFIG_IMPORT: configserver:http://configurator:8071/
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaserver:8070/eureka/
+      SPRING_ZIPKIN_BASEURL: http://zipkin:9411/
+    
+  cards:
+    image: narayanpratap86/cards:v1.0.03
+    mem_limit: 700m
+    ports:
+      - "9000:9000"
+    networks:
+      - narayanbank
+    depends_on:
+      - configurator
+      - eurekaserver
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 30s
+        max_attempts: 3
+        window: 120s
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      SPRING_CONFIG_IMPORT: configserver:http://configurator:8071/
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaserver:8070/eureka/
+      SPRING_ZIPKIN_BASEURL: http://zipkin:9411/
+   
+  gatewayserver:
+    image: narayanpratap86/gatewayserver:v1.0.01
+    mem_limit: 700m
+    ports:
+      - "8072:8072"
+    networks:
+      - narayanbank
+    depends_on:
+      - configurator
+      - eurekaserver
+      - cards
+      - loans
+      - accounts
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 70s
+        max_attempts: 5
+        window: 280s
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      SPRING_CONFIG_IMPORT: configserver:http://configurator:8071/
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaserver:8070/eureka/
+      SPRING_ZIPKIN_BASEURL: http://zipkin:9411/
+      
+networks:
+  narayanbank:
